@@ -4,18 +4,20 @@ import { FullScreenLoading } from "@/components/ui";
 import { useProducts } from "@/hooks";
 import { Typography } from "@mui/material";
 
-export default function Home() {
-  const { products, isLoading, isError } = useProducts("/products");
+export default function WomenPage() {
+  const { products, isLoading, isError } = useProducts(
+    "/products?gender=women"
+  );
   return (
     <ShopLayout
-      title="Teslo-Shop - Home"
-      pageDescription="Encuentra los mejores productos de Teslo aqui"
+      title="Teslo-Shop - Women"
+      pageDescription="Encuentra los mejores productos de Teslo para ellas"
     >
       <Typography variant="h1" component={"h1"}>
-        Tienda
+        Mujeres
       </Typography>
       <Typography variant="h2" component={"h2"} sx={{ mb: 1 }}>
-        Todos los productos
+        Productos para Ellas
       </Typography>
       {isLoading ? <FullScreenLoading /> : <ProductList products={products} />}
     </ShopLayout>
