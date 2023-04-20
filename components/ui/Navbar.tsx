@@ -1,3 +1,4 @@
+import { useCartContext } from "@/hooks";
 import { useUiContext } from "@/hooks/useUiContext";
 import {
   ClearOutlined,
@@ -24,6 +25,7 @@ export const Navbar = () => {
   const router = useRouter();
   const { asPath } = router;
   const { toggleSideMenu } = useUiContext();
+  const { numberOfItems } = useCartContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -127,7 +129,10 @@ export const Navbar = () => {
         <NextLink href={"/cart"} passHref>
           <Link component={"span"}>
             <IconButton>
-              <Badge badgeContent={2} color="secondary">
+              <Badge
+                badgeContent={numberOfItems > 9 ? "+9" : numberOfItems}
+                color="secondary"
+              >
                 <ShoppingCartOutlined />
               </Badge>
             </IconButton>
