@@ -1,3 +1,4 @@
+import { GetServerSideProps } from "next";
 import { ShopLayout } from "@/components/layouts";
 import {
   Box,
@@ -9,6 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { jwt } from "@/utils";
 
 export default function AddressPage() {
   return (
@@ -60,9 +62,37 @@ export default function AddressPage() {
       </Grid>
       <Box sx={{ mt: 5 }} display={"flex"} justifyContent={"center"}>
         <Button color="secondary" className="circular-btn" size="large">
-          REvisar pedido
+          Revisar pedido
         </Button>
       </Box>
     </ShopLayout>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const { token = "" } = req.cookies;
+
+  let userId = "";
+  let isValidToken = false;
+
+  try {
+    userId = await jwt.isValidToken(token);
+    console.log(userId);
+    isValidToken = true;
+  } catch (error) {
+    isValidToken = false;
+  }
+
+  if (!isValidToken) {
+    return {
+      redirect: {
+        destination: "/auth/login?p=/checkout/address",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

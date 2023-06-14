@@ -41,7 +41,8 @@ export default function LoginPage() {
       setTimeout(() => setIsError(false), 3000);
       return;
     }
-    router.replace("/");
+    const destinarion = router.query.p?.toString() || "/";
+    router.replace(destinarion);
     // try {
     //   const { data } = await tesloApi.post("/user/login", { email, password });
     //   const { token, user } = data;
@@ -116,7 +117,13 @@ export default function LoginPage() {
               </Button>
             </Grid>
             <Grid item xs={12} display={"flex"} justifyContent={"end"}>
-              <NextLink href={"/auth/register"} passHref>
+              <NextLink
+                href={{
+                  pathname: "/auth/register",
+                  query: { p: router.query.p?.toString() || "/" },
+                }}
+                passHref
+              >
                 <Link component={"span"}>¿No tienes una cuenta?</Link>
               </NextLink>
             </Grid>

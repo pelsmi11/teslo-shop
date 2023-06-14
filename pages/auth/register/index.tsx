@@ -49,7 +49,8 @@ export default function RegisterPage() {
       }, 3000);
       return;
     }
-    router.replace("/");
+    const destinarion = router.query.p?.toString() || "/";
+    router.replace(destinarion);
     // try {
     //   const { data } = await tesloApi.post("/user/register", {
     //     email,

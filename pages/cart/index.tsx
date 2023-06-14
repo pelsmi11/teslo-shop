@@ -16,12 +16,20 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 export default function Cart() {
-  const { numberOfItems } = useCartContext();
+  const { isLoaded, numberOfItems, cart } = useCartContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (numberOfItems < 1) router.push("/cart/empty");
-  }, [numberOfItems]);
+    if (isLoaded && cart.length === 0) router.replace("/cart/empty");
+  }, [isLoaded, cart, router]);
+
+  // Para evitar que renderice cualquier cosa en el cliente
+  if (!isLoaded) return <></>;
+
+  if (isLoaded && cart.length === 0) {
+    router.replace("/cart/empty");
+    return null; // Evita el renderizado temporal del componente
+  }
 
   return (
     <ShopLayout
@@ -44,7 +52,12 @@ export default function Cart() {
               <Divider sx={{ my: 1 }} />
               <OrderSummary />
               <Box sx={{ mt: 3 }}>
-                <Button color="secondary" className="circular-btn" fullWidth>
+                <Button
+                  color="secondary"
+                  className="circular-btn"
+                  fullWidth
+                  href="/checkout/address"
+                >
                   Checkout
                 </Button>
               </Box>
