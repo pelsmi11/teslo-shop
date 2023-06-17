@@ -23,7 +23,6 @@ export default function handler(
 ) {
   switch (req.method) {
     case "POST":
-      console.log("hola");
       return loginUser(req, res);
     default:
       return res.status(400).json({

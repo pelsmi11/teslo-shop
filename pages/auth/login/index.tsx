@@ -1,22 +1,25 @@
-import { tesloApi } from "@/api";
+import { GetServerSideProps } from "next";
 import { AuthLayout } from "@/components/layouts";
-import { useAuthContext } from "@/hooks";
+// import { useAuthContext } from "@/hooks";
 import { validations } from "@/utils";
 import { ErrorOutline } from "@mui/icons-material";
 import {
   Box,
   Button,
   Chip,
+  Divider,
   Grid,
   Link,
   TextField,
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import { signIn, getSession, getProviders } from "next-auth/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { UiProvider } from "../../../context/ui/UiProvider";
 
 type FormData = {
   email: string;
@@ -31,18 +34,31 @@ export default function LoginPage() {
   } = useForm<FormData>();
   // const onSubmit: SubmitHandler<FormData> = data => console.log(data);
   const router = useRouter();
-  const { loginUser } = useAuthContext();
+  // const { loginUser } = useAuthContext();
   const [isError, setIsError] = useState(false);
+  const [providers, setProviders] = useState<any>({});
+
+  useEffect(() => {
+    getProviders().then((prov) => {
+      setProviders(prov);
+    });
+  }, []);
 
   const onLoginUser = async ({ email, password }: FormData) => {
-    const isValidLogin = loginUser(email, password);
-    if (!isValidLogin) {
-      console.error("Error en las credenciales");
-      setTimeout(() => setIsError(false), 3000);
-      return;
-    }
-    const destinarion = router.query.p?.toString() || "/";
-    router.replace(destinarion);
+    await signIn("credentials", {
+      email,
+      password,
+    });
+    // ##version default
+    // const isValidLogin = loginUser(email, password);
+    // if (!isValidLogin) {
+    //   console.error("Error en las credenciales");
+    //   setTimeout(() => setIsError(false), 3000);
+    //   return;
+    // }
+    // const destinarion = router.query.p?.toString() || "/";
+    // router.replace(destinarion);
+    // ## first version
     // try {
     //   const { data } = await tesloApi.post("/user/login", { email, password });
     //   const { token, user } = data;
@@ -127,9 +143,58 @@ export default function LoginPage() {
                 <Link component={"span"}>¿No tienes una cuenta?</Link>
               </NextLink>
             </Grid>
+            <Grid
+              item
+              xs={12}
+              display={"flex"}
+              flexDirection={"column"}
+              justifyContent={"end"}
+            >
+              <Divider sx={{ width: "100%", mb: 2 }} />
+              {Object.values(providers).map((provider: any) => {
+                if (provider.id === "credentials")
+                  return <div key="credentials"></div>;
+                return (
+                  <Button
+                    key={provider.id}
+                    variant="outlined"
+                    fullWidth
+                    color="primary"
+                    sx={{ mb: 1 }}
+                    onClick={() => signIn(provider.id)}
+                  >
+                    {provider.name}
+                  </Button>
+                );
+              })}
+            </Grid>
           </Grid>
         </Box>
       </form>
     </AuthLayout>
   );
 }
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query,
+}) => {
+  const session = await getSession({ req });
+  const { p = "/" } = query;
+
+  if (session) {
+    return {
+      redirect: {
+        destination: p.toString(),
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

@@ -1,4 +1,5 @@
 import { tesloApi } from "@/api";
+import { GetServerSideProps } from "next";
 import { AuthLayout } from "@/components/layouts";
 import { useAuthContext } from "@/hooks";
 import { validations } from "@/utils";
@@ -13,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import { getSession, signIn } from "next-auth/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -49,8 +51,9 @@ export default function RegisterPage() {
       }, 3000);
       return;
     }
-    const destinarion = router.query.p?.toString() || "/";
-    router.replace(destinarion);
+    // const destinarion = router.query.p?.toString() || "/";
+    // router.replace(destinarion);
+    await signIn("credentials", { email, password });
     // try {
     //   const { data } = await tesloApi.post("/user/register", {
     //     email,
@@ -163,3 +166,24 @@ export default function RegisterPage() {
     </AuthLayout>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query,
+}) => {
+  const session = await getSession({ req });
+  const { p = "/" } = query;
+
+  if (session) {
+    return {
+      redirect: {
+        destination: p.toString(),
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

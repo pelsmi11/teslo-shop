@@ -46,10 +46,8 @@ export default function AddressPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    defaultValues: getAddressFromCookies(),
-  });
+    formState: { errors, defaultValues },
+  } = useForm<FormData>({ defaultValues: getAddressFromCookies() });
 
   const onSubmitAddress = (data: FormData) => {
     updateAddress(data);
@@ -144,13 +142,12 @@ export default function AddressPage() {
               <TextField
                 select
                 variant="filled"
-                label="País"
-                defaultValue={Cookies.get("country") || "GTM"}
+                label="Pais"
+                defaultValue={defaultValues?.country}
                 {...register("country", {
                   required: "Este campo es requerido",
                 })}
                 error={!!errors.country}
-                // helperText={ errors.country?.message }
               >
                 {countries.map((country) => (
                   <MenuItem key={country.code} value={country.code}>
