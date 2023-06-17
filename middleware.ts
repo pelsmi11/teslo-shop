@@ -7,7 +7,6 @@ export async function middleware(req: NextRequest) {
   const previousPage = req.nextUrl.pathname;
 
   const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  console.log(session);
 
   // if (previousPage.startsWith("/checkout")) {
   //   const token = req.cookies.get("token")?.value;
