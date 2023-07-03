@@ -1,3 +1,4 @@
+import { GetServerSideProps, NextPage } from "next";
 import { CartList, OrderSummary } from "@/components/cart";
 import { ShopLayout } from "@/components/layouts";
 import {
@@ -16,72 +17,102 @@ import {
   Typography,
 } from "@mui/material";
 import NextLink from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { dbOrders } from "@/database";
+import { IOrder } from "@/interfaces";
+import { countries } from "@/utils";
 
-export default function OrderPage() {
+interface Props {
+  order: IOrder;
+}
+
+const OrderPage: NextPage<Props> = ({ order }) => {
+  const {
+    _id,
+    orderItems,
+    isPaid,
+    numberOfItems,
+    shippingAddress,
+    subTotal,
+    total,
+    tax,
+  } = order;
+
+  const country = countries.filter(
+    (country) => country.code === shippingAddress.country
+  )[0];
   return (
     <ShopLayout
-      title="Resumen de la orden 1126481"
+      title={`Resumen de la orden ${_id}`}
       pageDescription="Resumen de la orden"
     >
       <Typography variant="h1" component={"h1"}>
-        Orden: ABC123
+        Orden: {_id}
       </Typography>
-      <Chip
-        sx={{ my: 2 }}
-        label="pagada"
-        variant="outlined"
-        color="success"
-        icon={<CreditScoreOutlined />}
-      />
-      {/* <Chip
-        sx={{ my: 2 }}
-        label="Pendiente de pago"
-        variant="outlined"
-        color="error"
-        icon={<CreditCardOffOutlined />}
-      /> */}
+      {isPaid ? (
+        <Chip
+          sx={{ my: 2 }}
+          label="pagada"
+          variant="outlined"
+          color="success"
+          icon={<CreditScoreOutlined />}
+        />
+      ) : (
+        <Chip
+          sx={{ my: 2 }}
+          label="Pendiente de pago"
+          variant="outlined"
+          color="error"
+          icon={<CreditCardOffOutlined />}
+        />
+      )}
+
+      {/*  */}
       <Grid container>
         <Grid item xs={12} sm={7}>
-          <CartList />
+          <CartList products={order.orderItems} />
         </Grid>
         <Grid item xs={12} sm={5}>
           <Card className="summary-card">
             <CardContent>
-              <Typography variant="h2">Orden</Typography>
+              <Typography variant="h2">
+                Resumen ({numberOfItems}{" "}
+                {numberOfItems > 1 ? "productos" : "producto"})
+              </Typography>
               <Divider sx={{ my: 1 }} />
 
-              <Box display={"flex"} justifyContent={"end"}>
-                <NextLink href={"/checkout/address"} passHref>
-                  <Link component={"span"} underline="always">
-                    Editar
-                  </Link>
-                </NextLink>
+              <Box display={"flex"} justifyContent={"space-between"}>
+                <Typography variant="subtitle1">
+                  Dirección de entrega
+                </Typography>
               </Box>
-              <Typography variant="subtitle1">Dirección de entrega</Typography>
-              <Typography>Fernando Herrera</Typography>
-              <Typography>323 Algun lugar</Typography>
-              <Typography>sulivan p sherman callwe walabi</Typography>
-              <Typography>sidney</Typography>
-              <Typography>+1 10391274</Typography>
+              <Typography>{`${shippingAddress.firstName} ${shippingAddress.lastName}`}</Typography>
+              <Typography>{shippingAddress.address}</Typography>
+              {shippingAddress.address2 && (
+                <Typography>{shippingAddress.address2}</Typography>
+              )}
+              <Typography>{shippingAddress.city}</Typography>
+              <Typography>{country.name}</Typography>
+              <Typography>{shippingAddress.phone}</Typography>
               <Divider sx={{ my: 1 }} />
-              <Box display={"flex"} justifyContent={"end"}>
-                <NextLink href={"/cart"} passHref>
-                  <Link component={"span"} underline="always">
-                    Editar
-                  </Link>
-                </NextLink>
-              </Box>
-              <OrderSummary />
-              <Box sx={{ mt: 3 }}>
+              <OrderSummary
+                orderValues={{ numberOfItems, subTotal, tax, total }}
+              />
+              <Box sx={{ mt: 3 }} display={"flex"} flexDirection={"column"}>
                 {/* TODO: */}
-                <h1>Pagar</h1>
-                <Chip
-                  sx={{ my: 2 }}
-                  label="pagada"
-                  variant="outlined"
-                  color="success"
-                  icon={<CreditScoreOutlined />}
-                />
+
+                {order.isPaid ? (
+                  <Chip
+                    sx={{ my: 2 }}
+                    label="pagada"
+                    variant="outlined"
+                    color="success"
+                    icon={<CreditScoreOutlined />}
+                  />
+                ) : (
+                  <h1>Pagar</h1>
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -89,4 +120,54 @@ export default function OrderPage() {
       </Grid>
     </ShopLayout>
   );
-}
+};
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query,
+  res,
+}) => {
+  const { id = "" } = query;
+
+  const session: any = await getServerSession(req, res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: `/auth/login?p=/orders/${id}`,
+        permanent: false,
+      },
+    };
+  }
+
+  const order = await dbOrders.getOrderById(id.toString());
+
+  if (!order) {
+    return {
+      redirect: {
+        destination: `/orders/history`,
+        permanent: false,
+      },
+    };
+  }
+
+  if (order.user !== session.user.id) {
+    return {
+      redirect: {
+        destination: `/orders/history`,
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      order,
+    },
+  };
+};
+
+export default OrderPage;

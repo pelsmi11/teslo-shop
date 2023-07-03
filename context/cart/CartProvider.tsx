@@ -1,7 +1,9 @@
 import { FC, useEffect, useReducer } from "react";
 import { CartContext, cartReducer } from "./";
-import { ICartProduct } from "@/interfaces";
+import { ICartProduct, IOrder, ShippingAddress } from "@/interfaces";
 import Cookies from "js-cookie";
+import { tesloApi } from "@/api";
+import axios from "axios";
 
 interface Props {
   children: JSX.Element | JSX.Element[];
@@ -14,18 +16,7 @@ export interface CartState {
   subTotal: number;
   tax: number;
   total: number;
-  shippingAddress?: shippingAddress;
-}
-
-export interface shippingAddress {
-  firstName: string;
-  lastName: string;
-  address: string;
-  address2?: string;
-  zip: string;
-  city: string;
-  country: string;
-  phone: string;
+  shippingAddress?: ShippingAddress;
 }
 
 const CART_INITIAL_STATE: CartState = {
@@ -142,7 +133,7 @@ export const CartProvider: FC<Props> = ({ children }) => {
     dispatch({ type: "[Cart] - Remove product in cart", payload: product });
   };
 
-  const updateAddress = (address: shippingAddress) => {
+  const updateAddress = (address: ShippingAddress) => {
     Cookies.set("firstName", address.firstName);
     Cookies.set("lastName", address.lastName);
     Cookies.set("address", address.address);
@@ -154,6 +145,56 @@ export const CartProvider: FC<Props> = ({ children }) => {
     dispatch({ type: "[Cart] - Update address", payload: address });
   };
 
+  const createOrder = async (): Promise<{
+    hasError: boolean;
+    message: string;
+  }> => {
+    if (!state.shippingAddress) {
+      throw new Error("No hay dirección de entrega");
+    }
+    const body: IOrder = {
+      orderItems: state.cart.map((p) => ({
+        ...p,
+        size: p.size!,
+      })),
+      shippingAddress: state.shippingAddress,
+      numberOfItems: state.numberOfItems,
+      subTotal: state.subTotal,
+      tax: state.tax,
+      total: state.total,
+      isPaid: false,
+    };
+    try {
+      const { data } = await tesloApi.post<IOrder>("/orders", body);
+      dispatch({ type: "[Cart] - Order Complete" });
+      Cookies.remove("firstName");
+      Cookies.remove("lastName");
+      Cookies.remove("address");
+      Cookies.remove("address2");
+      Cookies.remove("zip");
+      Cookies.remove("city");
+      Cookies.remove("country");
+      Cookies.remove("phone");
+      Cookies.remove("cart");
+
+      return {
+        hasError: false,
+        message: data._id!,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          hasError: true,
+          message: error.response?.data.message,
+        };
+      }
+      return {
+        hasError: true,
+        message: "Error no controlado, hable con el administrdor",
+      };
+    }
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -162,6 +203,9 @@ export const CartProvider: FC<Props> = ({ children }) => {
         updateCartQuantity,
         removeCartProduct,
         updateAddress,
+
+        //Orders
+        createOrder,
       }}
     >
       {children}
