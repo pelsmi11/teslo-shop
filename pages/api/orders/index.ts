@@ -57,13 +57,13 @@ const createOrder = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     const backendTotal = subTotal * taxRate;
 
     if (total !== backendTotal) {
-      console.log({ total, backendTotal });
       throw new Error(`El total no cuadra con el monto`);
     }
 
     //todo bien a este punto
     const userId = session.user.id;
     const newOrder = new Order({ ...req.body, isPaid: false, user: userId });
+    newOrder.total = Math.round(newOrder.total * 100) / 100;
     await newOrder.save();
     return res.status(201).json(newOrder);
   } catch (err: any) {
