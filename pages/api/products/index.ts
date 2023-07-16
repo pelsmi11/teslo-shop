@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { SHOP_CONSTANTS, db } from "@/database";
 import { Product } from "@/models";
 import { IProduct } from "../../../interfaces/products";
+import { getUrlImage } from "@/utils";
 
 type Data = { message: string } | IProduct[];
 
@@ -32,5 +33,13 @@ const getProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
     .lean();
   await db.disconnect();
 
-  return res.status(200).json(products);
+  const updatedProducts = products.map((product) => {
+    product.images = product.images.map((image) => {
+      return getUrlImage(image);
+    });
+
+    return product;
+  });
+
+  return res.status(200).json(updatedProducts);
 };

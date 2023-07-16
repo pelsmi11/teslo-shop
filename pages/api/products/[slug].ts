@@ -1,6 +1,7 @@
 import { db } from "@/database";
 import { IProduct } from "@/interfaces";
 import { Product } from "@/models";
+import { getUrlImage } from "@/utils";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data =
@@ -32,5 +33,8 @@ const getProductsBySlug = async (
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
+  product.images = product.images.map((image) => {
+    return getUrlImage(image);
+  });
   return res.status(200).json(product);
 };

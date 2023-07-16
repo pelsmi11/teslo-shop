@@ -30,8 +30,6 @@ const getPaypalBearerToken = async (): Promise<string | null> => {
     "utf8"
   ).toString("base64");
 
-  console.log({ base64Token, PAYPAL_CLIENT, PAYPAL_SECRET });
-
   try {
     const { data } = await axios.post(
       `${process.env.PAYPAL_OAUTH_URL || ""}`,
@@ -55,8 +53,6 @@ const getPaypalBearerToken = async (): Promise<string | null> => {
 };
 
 const payOrder = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
-  //https://api.sandbox.paypal.com/v2/checkout/orders/7M983525B7390720K
-
   const paypalBearerToken = await getPaypalBearerToken();
   if (!paypalBearerToken) {
     return res
