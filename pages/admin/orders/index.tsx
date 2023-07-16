@@ -47,19 +47,24 @@ const columns: GridColDef[] = [
 ];
 
 const OrdersPage = () => {
-  const { data, error } = useSWR<IOrder[]>("/api/admin/orders");
+  const { data, error } = useSWR<IOrder[]>("/api/admin/orders", {
+    refreshInterval: 30 * 1000,
+  });
 
   if (!data && !error) return <></>;
 
-  const rows = data!.map((order) => ({
-    id: order._id,
-    email: (order.user as IUser).email,
-    name: (order.user as IUser).name,
-    total: order.total,
-    isPaid: order.isPaid,
-    noProducts: order.numberOfItems,
-    createdAt: order.createdAt,
-  }));
+  const rows = data
+    ? data.map((order) => ({
+        id: order._id,
+        email: (order.user as IUser).email,
+        name: (order.user as IUser).name,
+        total: order.total,
+        isPaid: order.isPaid,
+        noProducts: order.numberOfItems,
+        createdAt: order.createdAt,
+      }))
+    : [];
+  if (rows.length === 0) return <></>;
   return (
     <AdminLayout
       title="Ordenes"

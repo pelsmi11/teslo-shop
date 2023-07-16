@@ -20,6 +20,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { UiProvider } from "../../../context/ui/UiProvider";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 type FormData = {
   email: string;
@@ -180,9 +182,11 @@ export default function LoginPage() {
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
+  res,
   query,
 }) => {
-  const session = await getSession({ req });
+  // const session = await getSession({ req });
+  const session: any = await getServerSession(req, res, authOptions);
   const { p = "/" } = query;
 
   if (session) {

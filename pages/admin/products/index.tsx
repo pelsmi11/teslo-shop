@@ -53,21 +53,26 @@ const columns: GridColDef[] = [
 ];
 
 const ProductsPage = () => {
-  const { data, error } = useSWR<IProduct[]>("/api/admin/products");
+  const { data, error } = useSWR<IProduct[]>("/api/admin/products", {
+    refreshInterval: 30 * 1000,
+  });
 
   if (!data && !error) return <></>;
 
-  const rows = data!.map((product) => ({
-    id: product._id,
-    img: product.images[0],
-    title: product.title,
-    gender: product.gender,
-    type: product.type,
-    inStock: product.inStock,
-    price: product.price,
-    sizes: product.sizes.join(", "),
-    slug: product.slug,
-  }));
+  const rows = data
+    ? data.map((product) => ({
+        id: product._id,
+        img: product.images[0],
+        title: product.title,
+        gender: product.gender,
+        type: product.type,
+        inStock: product.inStock,
+        price: product.price,
+        sizes: product.sizes.join(", "),
+        slug: product.slug,
+      }))
+    : [];
+  if (rows.length === 0) return <></>;
   return (
     <AdminLayout
       title={`Productos (${data?.length || 0})`}

@@ -19,6 +19,8 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 type FormData = {
   name: string;
@@ -169,9 +171,11 @@ export default function RegisterPage() {
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
+  res,
   query,
 }) => {
-  const session = await getSession({ req });
+  // const session = await getSession({ req });
+  const session: any = await getServerSession(req, res, authOptions);
   const { p = "/" } = query;
 
   if (session) {
