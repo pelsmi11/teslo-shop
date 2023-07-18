@@ -26,6 +26,10 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
+ARG MONGO_URL=18.01
+
+ENV MONGO_URL $MONGO_URLL
+RUN echo $MONGO_URL
 
 RUN yarn build
 
@@ -38,8 +42,6 @@ WORKDIR /app
 
 ENV NODE_ENV production
 
-ARG MONGO_URL
-ENV MONGO_URL=$MONGO_URL
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
