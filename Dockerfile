@@ -37,6 +37,9 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+
+ARG MONGO_URL
+ENV MONGO_URL=$MONGO_URL
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
