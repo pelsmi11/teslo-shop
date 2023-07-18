@@ -1,3 +1,5 @@
+##github actions
+
 ## Next.js Teslo Shop
 
 Para correr localmente, se necesita la base de datos
