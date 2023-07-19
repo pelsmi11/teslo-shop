@@ -1,0 +1,41 @@
+name: Actualizar aplicación en VPS
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker image"]
+    types:
+      - completed
+
+jobs:
+  update:
+    runs-on: [self-hosted, teslo-shop]
+
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v2
+
+      - name: Update Docker container
+        run: |
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/teslo-shop:latest
+          
+          # Verificar si el contenedor 'teslo-shop-container' está corriendo
+          if docker ps -a | grep -q 'teslo-shop-container'; then
+            docker stop teslo-shop-container
+            docker rm teslo-shop-container
+          fi
+          
+           docker run -d --name teslo-shop-container -p 61682:3000 \
+              -e MONGO_URL=${{ secrets.MONGO_URL }} \
+              -e JWT_SECREET_SEED=${{ secrets.JWT_SECREET_SEED }} \
+              -e GITHUB_ID=${{ secrets.GITHUB_ID }} \
+              -e GITHUB_SECRET=${{ secrets.GITHUB_SECRET }} \
+              -e NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} \
+              -e NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} \
+              -e NEXT_PUBLIC_PAYPAL_CLIENT_ID=${{ secrets.NEXT_PUBLIC_PAYPAL_CLIENT_ID }} \
+              -e PAYPAL_SECRET=${{ secrets.PAYPAL_SECRET }} \
+              -e PAYPAL_OAUTH_URL=${{ secrets.PAYPAL_OAUTH_URL }} \
+              -e PAYPAL_ORDERS_URL=${{ secrets.PAYPAL_ORDERS_URL }} \
+              -e CLOUDINARY_URL=${{ secrets.CLOUDINARY_URL }} \
+              -e HOST_NAME=${{ secrets.HOST_NAME }} \
+              ${{ secrets.DOCKER_HUB_USERNAME }}/teslo-shop:latest
+
