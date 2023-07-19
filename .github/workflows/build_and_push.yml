@@ -35,3 +35,4 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/teslo-shop:latest
           build-args: |
             MONGO_URL=${{ secrets.MONGO_URL }}
+            HOST_NAME=${{ secrets.HOST_NAME }}

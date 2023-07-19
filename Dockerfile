@@ -32,6 +32,11 @@ ARG MONGO_URL=18.01
 ENV MONGO_URL $MONGO_URL
 RUN echo $MONGO_URL
 
+ARG HOST_NAME=https://teslo-shop.pelsmi11.website
+
+ENV HOST_NAME $HOST_NAME
+RUN echo $HOST_NAME
+
 RUN yarn build
 
 # If using npm comment out above and use below instead
