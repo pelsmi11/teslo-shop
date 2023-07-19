@@ -58,6 +58,17 @@ ARG PAYPAL_ORDERS_URL=https://api.sandbox.paypal.com/v2/checkout/orders
 ENV PAYPAL_ORDERS_URL $PAYPAL_ORDERS_URL
 RUN echo $PAYPAL_ORDERS_URL
 
+
+ARG ID_GITHUB=18.01
+
+ENV ID_GITHUB $ID_GITHUB
+RUN echo $ID_GITHUB
+
+ARG SECRET_GITHUB=18.01
+
+ENV SECRET_GITHUB $SECRET_GITHUB
+RUN echo $SECRET_GITHUB
+
 RUN yarn build
 
 # If using npm comment out above and use below instead

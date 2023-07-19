@@ -40,3 +40,5 @@ jobs:
             PAYPAL_SECRET=${{ secrets.PAYPAL_SECRET }}
             PAYPAL_OAUTH_URL=${{ secrets.PAYPAL_OAUTH_URL }}
             PAYPAL_ORDERS_URL=${{ secrets.PAYPAL_ORDERS_URL }}
+            ID_GITHUB=${{ secrets.ID_GITHUB }}
+            SECRET_GITHUB=${{ secrets.SECRET_GITHUB }}
