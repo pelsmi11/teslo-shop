@@ -8,22 +8,22 @@ on:
 
 jobs:
   update:
-    runs-on: [self-hosted, teslo-shop]
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout 
+      - name: Checkout
         uses: actions/checkout@v2
 
       - name: Update Docker container
         run: |
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/teslo-shop:latest
-          
+
           # Verificar si el contenedor 'teslo-shop-container' está corriendo
           if docker ps -a | grep -q 'teslo-shop-container'; then
             docker stop teslo-shop-container
             docker rm teslo-shop-container
           fi
-          
+
            docker run -d --name teslo-shop-container -p 61682:3000 \
               -e MONGO_URL=${{ secrets.MONGO_URL }} \
               -e JWT_SECREET_SEED=${{ secrets.JWT_SECREET_SEED }} \
@@ -38,4 +38,3 @@ jobs:
               -e CLOUDINARY_URL=${{ secrets.CLOUDINARY_URL }} \
               -e HOST_NAME=${{ secrets.HOST_NAME }} \
               ${{ secrets.DOCKER_HUB_USERNAME }}/teslo-shop:latest
-
